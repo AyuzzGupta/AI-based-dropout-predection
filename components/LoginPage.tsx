@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
+import { Teacher } from '../types';
+import { authenticateUser } from '../services/database';
 
 interface LoginPageProps {
-    onLogin: () => void;
+    onLogin: (teacher: Teacher) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
@@ -12,11 +14,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock authentication
-        if (email === 'teacher@example.com' && password === 'password') {
-            onLogin();
+        const teacher = authenticateUser(email, password);
+        if (teacher) {
+            onLogin(teacher);
         } else {
-            setError('Invalid credentials. Use teacher@example.com and password.');
+            setError('Invalid credentials. Try sharma@example.com or iyer@example.com with password "password123"');
         }
     };
 
@@ -44,7 +46,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-600 bg-slate-700 placeholder-slate-400 text-gray-200 rounded-t-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address (teacher@example.com)"
+                                placeholder="Email (e.g., sharma@example.com)"
                             />
                         </div>
                         <div>
@@ -58,7 +60,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-600 bg-slate-700 placeholder-slate-400 text-gray-200 rounded-b-md focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
-                                placeholder="Password (password)"
+                                placeholder="Password (password123)"
                             />
                         </div>
                     </div>

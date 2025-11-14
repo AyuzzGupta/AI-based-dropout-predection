@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { RiskLevel } from '../types';
+import { getPrediction } from '../services/geminiService';
 
 interface PredictionResult {
     chance: number;
@@ -18,27 +18,21 @@ const PredictionPage: React.FC = () => {
     const [avgScore, setAvgScore] = useState(75);
     const [feesDue, setFeesDue] = useState(10);
     const [result, setResult] = useState<PredictionResult | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handlePredict = () => {
-        // Simple heuristic model to simulate prediction
-        // Weights: Attendance: 50%, Score: 30%, Fees: 20%
-        const attendanceScore = (100 - attendance) * 0.5;
-        const scorePenalty = (100 - avgScore) * 0.3;
-        const feesPenalty = Math.min(feesDue / 60, 1) * 20; // Cap fees penalty contribution
+    const handlePredict = async () => {
+        setIsLoading(true);
+        setResult(null);
 
-        let dropoutChance = attendanceScore + scorePenalty + feesPenalty;
-        dropoutChance = Math.max(0, Math.min(100, dropoutChance)); // Clamp between 0 and 100
-
-        let riskLevel: RiskLevel;
-        if (dropoutChance > 65) {
-            riskLevel = RiskLevel.High;
-        } else if (dropoutChance > 35) {
-            riskLevel = RiskLevel.Medium;
-        } else {
-            riskLevel = RiskLevel.Low;
+        try {
+            const predictionResult = await getPrediction(attendance, avgScore, feesDue);
+            setResult(predictionResult);
+        } catch (error) {
+            console.error("Prediction failed:", error);
+            // You can set an error state here to show in the UI
+        } finally {
+            setIsLoading(false);
         }
-
-        setResult({ chance: Math.round(dropoutChance), riskLevel });
     };
 
     return (
@@ -94,14 +88,27 @@ const PredictionPage: React.FC = () => {
                     </div>
                     <button
                         onClick={handlePredict}
-                        className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-4 rounded-md transition-colors text-lg"
+                        disabled={isLoading}
+                        className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-4 rounded-md transition-colors text-lg disabled:opacity-50 disabled:cursor-wait flex justify-center items-center"
                     >
-                        Predict Risk
+                        {isLoading ? (
+                            <>
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                                Predicting...
+                            </>
+                        ) : (
+                            'Predict Risk'
+                        )}
                     </button>
                 </div>
                 
                 <div className="bg-slate-800 p-8 rounded-lg shadow-lg h-full flex flex-col justify-center items-center min-h-[280px]">
-                    {result ? (
+                    {isLoading ? (
+                        <div className="text-center text-slate-400">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto"></div>
+                            <p className="text-lg mt-4">AI is analyzing the data...</p>
+                        </div>
+                    ) : result ? (
                         <div className="text-center">
                             <p className="text-slate-400 text-lg">Predicted Dropout Chance</p>
                             <p className={`text-7xl font-bold my-2 ${riskDisplayConfig[result.riskLevel].color}`}>

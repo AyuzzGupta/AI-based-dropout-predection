@@ -1,18 +1,34 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Student, RiskLevel, CounselStatus } from '../types';
-import { mockStudents } from '../constants';
+import { Student, RiskLevel, CounselStatus, Teacher } from '../types';
+import { getStudentsForTeacher, updateStudentInStorage } from '../services/studentService';
 import SummaryCard from './SummaryCard';
 import CounselingChatbot from './CounselingChatbot';
 import StudentTable from './StudentTable';
 
-const DashboardPage: React.FC = () => {
-    const [students, setStudents] = useState<Student[]>(mockStudents);
+interface DashboardPageProps {
+    currentUser: Teacher;
+}
+
+const DashboardPage: React.FC<DashboardPageProps> = ({ currentUser }) => {
+    const [students, setStudents] = useState<Student[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [filter, setFilter] = useState<RiskLevel | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [isGeneralChatbotOpen, setIsGeneralChatbotOpen] = useState(false);
+
+    useEffect(() => {
+        const loadStudentData = async () => {
+            if (!currentUser) return;
+            setIsLoading(true);
+            const data = await getStudentsForTeacher(currentUser);
+            setStudents(data);
+            setIsLoading(false);
+        };
+        loadStudentData();
+    }, [currentUser]);
 
     const summaryData = useMemo(() => {
         const total = students.length;
@@ -79,16 +95,33 @@ const DashboardPage: React.FC = () => {
         setIsGeneralChatbotOpen(false);
     }, []);
 
-    const updateCounselStatus = useCallback((studentId: number, status: CounselStatus) => {
-        setStudents(prev => prev.map(s => s.id === studentId ? { ...s, counselStatus: status } : s));
+    const updateCounselStatus = useCallback(async (studentId: number, status: CounselStatus) => {
+        const studentToUpdate = students.find(s => s.id === studentId);
+        if (studentToUpdate) {
+            const updatedStudent = { ...studentToUpdate, counselStatus: status };
+            await updateStudentInStorage(updatedStudent);
+            setStudents(prev => prev.map(s => s.id === studentId ? updatedStudent : s));
+        }
         handleCloseChatbot();
-    }, [handleCloseChatbot]);
+    }, [students, handleCloseChatbot]);
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-400 mx-auto"></div>
+                    <p className="text-xl text-slate-300 mt-4">Loading Student Data for Class {currentUser.class}...</p>
+                    <p className="text-slate-400">This may take a moment on the first login.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div>
             <header className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-cyan-400">Counseling System Dashboard</h1>
-                <p className="text-slate-400 mt-1">Monitor student risk levels and analytics.</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-cyan-400">{currentUser.name}'s Dashboard</h1>
+                <p className="text-slate-400 mt-1">Monitor student risk levels and analytics for Class {currentUser.class}.</p>
             </header>
 
             <div>

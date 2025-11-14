@@ -1,18 +1,20 @@
 
 import React from 'react';
 import { Page } from '../App';
+import { Teacher } from '../types';
 
 interface HomePageProps {
     onNavigate: (page: Page) => void;
+    currentUser: Teacher;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
+const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentUser }) => {
     return (
         <div className="text-center">
             <header className="mb-12 pt-8">
-                <h1 className="text-4xl md:text-5xl font-bold text-cyan-400 mb-4">Welcome to the AI Dropout Prediction System</h1>
+                <h1 className="text-4xl md:text-5xl font-bold text-cyan-400 mb-4">Welcome, {currentUser.name}!</h1>
                 <p className="max-w-3xl mx-auto text-lg text-slate-300">
-                    This platform leverages AI to provide teachers with powerful tools to identify at-risk students and offer timely, effective counseling. Explore the system's features to enhance student success and retention.
+                    This platform leverages AI to provide teachers with powerful tools to identify at-risk students and offer timely, effective counseling. Explore the system's features to enhance student success and retention for Class {currentUser.class}.
                 </p>
             </header>
 
@@ -23,7 +25,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 >
                     <h2 className="text-2xl font-bold text-violet-400 mb-3">Counseling System</h2>
                     <p className="text-slate-400">
-                        Access the full teacher dashboard. View student data, risk levels, and use the AI-powered chatbot to get personalized counseling strategies for each student.
+                        Access your full teacher dashboard. View student data, risk levels, and use the AI-powered chatbot to get personalized counseling strategies for each student.
                     </p>
                 </div>
                 <div 

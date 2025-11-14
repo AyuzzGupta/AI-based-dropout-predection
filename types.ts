@@ -19,9 +19,17 @@ export interface Student {
     feesDue: number;
     riskLevel: RiskLevel;
     counselStatus: CounselStatus;
+    teacherId: string;
 }
 
 export interface ChatMessage {
     role: 'user' | 'model';
     text: string;
+}
+
+export interface Teacher {
+    id: string;
+    name: string;
+    class: string;
+    email: string;
 }

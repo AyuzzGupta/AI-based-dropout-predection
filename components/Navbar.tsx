@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { Page } from '../App';
+import { Teacher } from '../types';
 
 interface NavbarProps {
     currentPage: Page;
     onNavigate: (page: Page) => void;
     onLogout: () => void;
+    currentUser: Teacher;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogout }) => {
+const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogout, currentUser }) => {
     const navItems: { page: Page; label: string }[] = [
         { page: 'home', label: 'Home' },
         { page: 'dashboard', label: 'Counseling System' },
@@ -39,7 +41,10 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onLogout }) =>
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div className="flex items-center gap-4">
+                        <span className="hidden sm:block text-sm text-slate-300">
+                            Welcome, {currentUser.name}
+                        </span>
                         <button
                             onClick={onLogout}
                             className="bg-violet-600 hover:bg-violet-700 text-white font-medium py-2 px-4 rounded-md transition-colors text-sm"

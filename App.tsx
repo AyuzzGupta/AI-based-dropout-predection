@@ -5,46 +5,52 @@ import HomePage from './components/HomePage';
 import DashboardPage from './components/DashboardPage';
 import PredictionPage from './components/PredictionPage';
 import Navbar from './components/Navbar';
+import { Teacher } from './types';
 
 export type Page = 'home' | 'dashboard' | 'prediction';
 
 const App: React.FC = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [currentUser, setCurrentUser] = useState<Teacher | null>(null);
     const [currentPage, setCurrentPage] = useState<Page>('home');
 
-    const handleLogin = () => {
-        setIsAuthenticated(true);
+    const handleLogin = (teacher: Teacher) => {
+        setCurrentUser(teacher);
         setCurrentPage('home');
     };
 
     const handleLogout = () => {
-        setIsAuthenticated(false);
+        setCurrentUser(null);
     };
 
     const handleNavigate = (page: Page) => {
         setCurrentPage(page);
     };
 
-    if (!isAuthenticated) {
+    if (!currentUser) {
         return <LoginPage onLogin={handleLogin} />;
     }
 
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
-                return <HomePage onNavigate={handleNavigate} />;
+                return <HomePage onNavigate={handleNavigate} currentUser={currentUser} />;
             case 'dashboard':
-                return <DashboardPage />;
+                return <DashboardPage currentUser={currentUser} />;
             case 'prediction':
                 return <PredictionPage />;
             default:
-                return <HomePage onNavigate={handleNavigate} />;
+                return <HomePage onNavigate={handleNavigate} currentUser={currentUser} />;
         }
     };
 
     return (
         <div className="min-h-screen bg-slate-900 text-gray-200">
-            <Navbar currentPage={currentPage} onNavigate={handleNavigate} onLogout={handleLogout} />
+            <Navbar 
+                currentPage={currentPage} 
+                onNavigate={handleNavigate} 
+                onLogout={handleLogout} 
+                currentUser={currentUser}
+            />
             <div className="p-4 lg:p-8">
                 {renderPage()}
             </div>
